@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: epti-postgres
+    environment:
+      POSTGRES_DB: epti_db
+      POSTGRES_USER: epti_user
+      POSTGRES_PASSWORD: epti_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - epti-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U epti_user -d epti_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epti-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DB_URL: jdbc:postgresql://postgres:5432/epti_db
+      DB_USERNAME: epti_user
+      DB_PASSWORD: epti_password
+      JWT_SECRET: mySuperSecretJwtKeyForProduction123456789012345678901234567890
+      JWT_EXPIRATION: 86400000
+      CORS_ALLOWED_ORIGINS: http://localhost:4200,http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - epti-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/public/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis (for caching and sessions - optional)
+  redis:
+    image: redis:7-alpine
+    container_name: epti-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - epti-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  epti-network:
+    driver: bridge

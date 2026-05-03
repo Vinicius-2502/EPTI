@@ -16,6 +16,7 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
+    allow-circular-references: true
 
   datasource:
     url: jdbc:postgresql://localhost:5432/epti_db

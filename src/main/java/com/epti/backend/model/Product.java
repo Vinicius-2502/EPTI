@@ -50,12 +50,13 @@ public class Product extends BaseEntity {
     @Builder.Default
     private Set<Kit> kits = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
+    @ElementCollection
+    @CollectionTable(
         name = "product_turmas",
-        joinColumns = @JoinColumn(name = "product_id"),
-        inverseJoinColumns = @JoinColumn(name = "turma_id")
+        joinColumns = @JoinColumn(name = "product_id")
     )
+    @Column(name = "turma")
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Set<Turma> allowedTurmas = new HashSet<>();
 

@@ -55,12 +55,13 @@ public class Kit extends BaseEntity {
     @Builder.Default
     private Set<Product> products = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
+    @ElementCollection
+    @CollectionTable(
         name = "kit_turmas",
-        joinColumns = @JoinColumn(name = "kit_id"),
-        inverseJoinColumns = @JoinColumn(name = "turma_id")
+        joinColumns = @JoinColumn(name = "kit_id")
     )
+    @Column(name = "turma")
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private Set<Turma> allowedTurmas = new HashSet<>();
 

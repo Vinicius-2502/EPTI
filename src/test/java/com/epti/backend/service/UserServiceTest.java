@@ -48,6 +48,9 @@ class UserServiceTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private UserService userService;
 
@@ -57,13 +60,11 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         userRole = Role.builder()
-                .id(1L)
                 .name("USER")
                 .description("Default user role")
                 .build();
 
         testUser = User.builder()
-                .id(1L)
                 .username("testuser")
                 .email("test@example.com")
                 .password("encodedPassword")
@@ -202,6 +203,7 @@ class UserServiceTest {
     @Test
     void shouldGetUserById() {
         // Given
+        testUser.setId(1L); // Configurando ID para o teste
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
         // When
